@@ -1,5 +1,0 @@
-2020/04/23-21:17:48.253 d35 Reusing MANIFEST /home/bigdice/.config/chromium/Default/IndexedDB/https_forum.manjaro.org_0.indexeddb.leveldb/MANIFEST-000001
-2020/04/23-21:18:24.308 705 Level-0 table #5: started
-2020/04/23-21:18:24.362 705 Level-0 table #5: 60009 bytes OK
-2020/04/23-21:18:24.429 705 Delete type=0 #3
-2020/04/23-21:18:24.430 705 Manual compaction at level-0 from (begin) .. (end); will stop at (end)

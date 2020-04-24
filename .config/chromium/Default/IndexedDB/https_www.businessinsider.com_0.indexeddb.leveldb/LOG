@@ -1,5 +1,0 @@
-2020/04/23-03:44:27.944 1a4e Reusing MANIFEST /home/bigdice/.config/chromium/Default/IndexedDB/https_www.businessinsider.com_0.indexeddb.leveldb/MANIFEST-000001
-2020/04/23-03:44:52.298 18e4 Level-0 table #5: started
-2020/04/23-03:44:52.370 18e4 Level-0 table #5: 143713 bytes OK
-2020/04/23-03:44:52.411 18e4 Delete type=0 #3
-2020/04/23-03:44:52.412 18e4 Manual compaction at level-0 from (begin) .. (end); will stop at (end)
