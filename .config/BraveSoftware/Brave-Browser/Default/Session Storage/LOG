@@ -1,0 +1,30 @@
+2020/04/24-17:35:32.004 d3db Reusing MANIFEST /home/bigdice/.config/BraveSoftware/Brave-Browser/Default/Session Storage/MANIFEST-000001
+2020/04/24-17:35:32.005 d3db Recovering log #66
+2020/04/24-17:35:32.005 d3db Reusing old log /home/bigdice/.config/BraveSoftware/Brave-Browser/Default/Session Storage/000066.log 
+2020/04/24-17:38:13.025 d612 Level-0 table #70: started
+2020/04/24-17:38:13.087 d612 Level-0 table #70: 17221 bytes OK
+2020/04/24-17:38:13.120 d612 Delete type=0 #66
+2020/04/24-18:31:35.328 d612 Level-0 table #72: started
+2020/04/24-18:31:35.376 d612 Level-0 table #72: 17276 bytes OK
+2020/04/24-18:31:35.409 d612 Delete type=0 #69
+2020/04/24-18:41:07.263 d612 Level-0 table #74: started
+2020/04/24-18:41:07.315 d612 Level-0 table #74: 17583 bytes OK
+2020/04/24-18:41:07.356 d612 Delete type=0 #71
+2020/04/24-18:41:07.356 d612 Compacting 4@0 + 1@1 files
+2020/04/24-18:41:07.405 d612 Generated table #75@0: 1026 keys, 40929 bytes
+2020/04/24-18:41:07.405 d612 Compacted 4@0 + 1@1 files => 40929 bytes
+2020/04/24-18:41:07.444 d612 compacted to: files[ 0 1 1 0 0 0 0 ]
+2020/04/24-18:41:07.445 d612 Delete type=2 #67
+2020/04/24-18:41:07.445 d612 Delete type=2 #74
+2020/04/24-18:41:07.445 d612 Delete type=2 #64
+2020/04/24-18:41:07.445 d612 Delete type=2 #70
+2020/04/24-18:41:07.445 d612 Delete type=2 #72
+2020/04/24-18:54:22.517 d612 Level-0 table #77: started
+2020/04/24-18:54:22.559 d612 Level-0 table #77: 17385 bytes OK
+2020/04/24-18:54:22.601 d612 Delete type=0 #73
+2020/04/24-19:56:00.450 d612 Level-0 table #79: started
+2020/04/24-19:56:00.491 d612 Level-0 table #79: 19626 bytes OK
+2020/04/24-19:56:00.534 d612 Delete type=0 #76
+2020/04/24-20:30:14.004 d612 Level-0 table #81: started
+2020/04/24-20:30:14.119 d612 Level-0 table #81: 16968 bytes OK
+2020/04/24-20:30:14.158 d612 Delete type=0 #78

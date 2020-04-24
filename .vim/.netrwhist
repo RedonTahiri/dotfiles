@@ -1,0 +1,11 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhistcnt =9
+let g:netrw_dirhist_9='/home/bigdice/.config/awesome'
+let g:netrw_dirhist_8='/home/bigdice/st'
+let g:netrw_dirhist_7='/home/bigdice/.config/awesome/default'
+let g:netrw_dirhist_6='/home/bigdice/st'
+let g:netrw_dirhist_5='/home/bigdice/.oh-my-zsh'
+let g:netrw_dirhist_4='/home/bigdice/.config/st'
+let g:netrw_dirhist_3='/home/bigdice/.config/awesome/awesome-wm-widgets/email-widget'
+let g:netrw_dirhist_2='/mnt/Users/bigdice/AppData/Roaming/Mozilla/Firefox/Profiles/9d92h3rc.default-release-1567855555827'
+let g:netrw_dirhist_1='/etc/bluetooth'

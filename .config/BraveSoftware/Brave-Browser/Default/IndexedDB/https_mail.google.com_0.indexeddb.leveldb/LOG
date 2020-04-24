@@ -1,0 +1,6 @@
+2020/04/24-20:03:59.214 f1c9 Reusing MANIFEST /home/bigdice/.config/BraveSoftware/Brave-Browser/Default/IndexedDB/https_mail.google.com_0.indexeddb.leveldb/MANIFEST-000001
+2020/04/24-20:03:59.214 f1c9 Recovering log #4
+2020/04/24-20:03:59.493 f1c9 Reusing old log /home/bigdice/.config/BraveSoftware/Brave-Browser/Default/IndexedDB/https_mail.google.com_0.indexeddb.leveldb/000004.log 
+2020/04/24-20:04:29.916 f31a Level-0 table #8: started
+2020/04/24-20:04:30.092 f31a Level-0 table #8: 1674776 bytes OK
+2020/04/24-20:04:30.275 f31a Delete type=0 #4

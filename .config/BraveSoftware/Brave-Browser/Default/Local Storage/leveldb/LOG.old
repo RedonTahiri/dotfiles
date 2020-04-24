@@ -1,0 +1,23 @@
+2020/04/24-16:13:26.683 c260 Reusing MANIFEST /home/bigdice/.config/BraveSoftware/Brave-Browser/Default/Local Storage/leveldb/MANIFEST-000001
+2020/04/24-16:13:26.683 c260 Recovering log #44
+2020/04/24-16:13:26.685 c260 Level-0 table #48: started
+2020/04/24-16:13:26.728 c260 Level-0 table #48: 74084 bytes OK
+2020/04/24-16:13:26.764 c260 Delete type=0 #44
+2020/04/24-16:14:04.960 c416 Level-0 table #51: started
+2020/04/24-16:14:05.062 c416 Level-0 table #51: 62811 bytes OK
+2020/04/24-16:14:05.100 c416 Delete type=0 #49
+2020/04/24-16:45:46.501 c416 Level-0 table #53: started
+2020/04/24-16:45:46.551 c416 Level-0 table #53: 18779 bytes OK
+2020/04/24-16:45:46.594 c416 Delete type=0 #50
+2020/04/24-17:16:27.368 c416 Level-0 table #55: started
+2020/04/24-17:16:27.414 c416 Level-0 table #55: 19167 bytes OK
+2020/04/24-17:16:27.450 c416 Delete type=0 #52
+2020/04/24-17:16:27.451 c416 Compacting 4@0 + 1@1 files
+2020/04/24-17:16:27.493 c416 Generated table #56@0: 453 keys, 87695 bytes
+2020/04/24-17:16:27.493 c416 Compacted 4@0 + 1@1 files => 87695 bytes
+2020/04/24-17:16:27.527 c416 compacted to: files[ 0 1 1 0 0 0 0 ]
+2020/04/24-17:16:27.527 c416 Delete type=2 #51
+2020/04/24-17:16:27.527 c416 Delete type=2 #55
+2020/04/24-17:16:27.527 c416 Delete type=2 #53
+2020/04/24-17:16:27.527 c416 Delete type=2 #48
+2020/04/24-17:16:27.527 c416 Delete type=2 #46

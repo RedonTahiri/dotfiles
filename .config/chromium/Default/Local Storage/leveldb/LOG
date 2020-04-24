@@ -1,0 +1,27 @@
+2020/04/23-20:18:24.063 495 Reusing MANIFEST /home/bigdice/.config/chromium/Default/Local Storage/leveldb/MANIFEST-000001
+2020/04/23-20:18:24.063 495 Recovering log #31
+2020/04/23-20:18:24.063 495 Reusing old log /home/bigdice/.config/chromium/Default/Local Storage/leveldb/000031.log 
+2020/04/23-20:36:19.235 779 Level-0 table #36: started
+2020/04/23-20:36:19.298 779 Level-0 table #36: 72512 bytes OK
+2020/04/23-20:36:19.340 779 Delete type=0 #31
+2020/04/23-20:39:55.718 779 Level-0 table #38: started
+2020/04/23-20:39:55.774 779 Level-0 table #38: 60342 bytes OK
+2020/04/23-20:39:55.816 779 Delete type=0 #35
+2020/04/23-20:59:26.607 779 Level-0 table #40: started
+2020/04/23-20:59:26.717 779 Level-0 table #40: 64902 bytes OK
+2020/04/23-20:59:26.753 779 Delete type=0 #37
+2020/04/23-21:08:09.708 779 Level-0 table #42: started
+2020/04/23-21:08:09.766 779 Level-0 table #42: 62710 bytes OK
+2020/04/23-21:08:09.809 779 Delete type=0 #39
+2020/04/23-21:08:09.809 779 Compacting 4@0 + 1@1 files
+2020/04/23-21:08:09.878 779 Generated table #43@0: 246 keys, 304233 bytes
+2020/04/23-21:08:09.878 779 Compacted 4@0 + 1@1 files => 304233 bytes
+2020/04/23-21:08:09.920 779 compacted to: files[ 0 1 0 0 0 0 0 ]
+2020/04/23-21:08:09.920 779 Delete type=2 #42
+2020/04/23-21:08:09.920 779 Delete type=2 #38
+2020/04/23-21:08:09.920 779 Delete type=2 #36
+2020/04/23-21:08:09.920 779 Delete type=2 #40
+2020/04/23-21:08:09.920 779 Delete type=2 #33
+2020/04/23-21:30:53.861 779 Level-0 table #45: started
+2020/04/23-21:30:53.905 779 Level-0 table #45: 15312 bytes OK
+2020/04/23-21:30:53.945 779 Delete type=0 #41

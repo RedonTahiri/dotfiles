@@ -1,0 +1,15 @@
+2020/04/23-04:19:00.309 2add Reusing MANIFEST /home/bigdice/.config/chromium/Default/IndexedDB/https_mail.google.com_0.indexeddb.leveldb/MANIFEST-000001
+2020/04/23-04:19:00.309 2add Recovering log #19
+2020/04/23-04:19:00.309 2add Reusing old log /home/bigdice/.config/chromium/Default/IndexedDB/https_mail.google.com_0.indexeddb.leveldb/000019.log 
+2020/04/23-04:20:58.745 2f11 Level-0 table #24: started
+2020/04/23-04:20:58.796 2f11 Level-0 table #24: 317185 bytes OK
+2020/04/23-04:20:58.883 2f11 Delete type=0 #19
+2020/04/23-04:20:58.883 2f11 Manual compaction at level-0 from (begin) .. (end); will stop at (end)
+2020/04/23-04:20:58.883 2f11 Manual compaction at level-1 from (begin) .. (end); will stop at '\x00\x08\x01\x02\x01\x15\x00S\x00t\x00o\x00r\x00e\x00d\x00C\x00a\x00c\x00h\x00e\x00S\x00t\x00a\x00t\x00e\x00:\x00:\x00A\x00L\x00L' @ 5308 : 1
+2020/04/23-04:20:58.883 2f11 Compacting 1@1 + 1@2 files
+2020/04/23-04:20:58.931 2f11 Generated table #25@1: 122 keys, 42774 bytes
+2020/04/23-04:20:58.931 2f11 Compacted 1@1 + 1@2 files => 42774 bytes
+2020/04/23-04:20:58.971 2f11 compacted to: files[ 0 0 1 0 0 0 0 ]
+2020/04/23-04:20:58.972 2f11 Delete type=2 #21
+2020/04/23-04:20:58.972 2f11 Delete type=2 #24
+2020/04/23-04:20:58.972 2f11 Manual compaction at level-1 from '\x00\x08\x01\x02\x01\x15\x00S\x00t\x00o\x00r\x00e\x00d\x00C\x00a\x00c\x00h\x00e\x00S\x00t\x00a\x00t\x00e\x00:\x00:\x00A\x00L\x00L' @ 5308 : 1 .. (end); will stop at (end)

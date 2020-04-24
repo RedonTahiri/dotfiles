@@ -1,0 +1,813 @@
+// streamingworker.js
+// //////////////////////////////////////////////////////////////////////////
+/* eslint-env worker */
+/* global registerDeviceInterface */
+// disable eslint es6 specific errors because this file is not transpiled
+/* eslint no-const: off, prefer-rest-params: off, object-shorthand: off, prefer-template: off, prefer-arrow-callback: off */
+
+function getOpenScopeInterface(p_MainWorker) {
+	const REQUEST_TYPE = Object.freeze({
+		POST: 'POST',
+		GET: 'GET',
+	});
+
+	const MAX_RETRIES = 5;				// maximal number of times to retry communicating to an url (this is just retries for the XMLHTTPRequest, retries for failed commands should be handled differently (on a command by command basis)
+	const tryCounter = {};				// Count number of tries to do an XMLHTTPRequest to a given server, will be reset on any successful communication
+	const requestQueue = {};			// queue of XMLHttpRequest, each source has its own queue. We don't want to start new request until previous requests have been handled
+	const minimalWaitTime = {};			// Per source list of minimal wait time (time we will wait between a trigger request and subsequent instrument read)
+	const dataReadWaitTimeout = {};		// information about wait timeouts for each source
+	let sourcesInfoCache = {};			// information about url sources
+
+	/**
+	 * Interpret the given status code into an error code
+	 * @param p_StatusCode {Number} Error code we want to interpret
+	 * @returns {{error: (undefined|String), errorCode: String}} Object containing an error as one of errorCodes or undefined if it was no error + errorCode which holds an hexadecimal representation of the origin status code
+	 */
+	function interpretErrorCode(p_StatusCode) {
+		const STATECompound = 0x10000000;
+		const STATEPredefined = 0x20000000;
+		// const STATEWarning = 0x40000000; // this was defined in the firmware source code but doesn't seem to be used anywhere
+		const STATEError = 0x80000000;
+
+		const Errors = [p_MainWorker.errorCodes.EC_NOERROR]; // 0 is no errors
+		Errors[(STATEError | STATECompound | 0x00100000) >>> 0] = p_MainWorker.errorCodes.EC_CFGMOUNTERROR;
+		Errors[(STATEError | STATECompound | 0x00200000) >>> 0] = p_MainWorker.errorCodes.EC_CFGFILESYSTEMERROR;
+		Errors[(STATEError | STATECompound | 0x00300000) >>> 0] = p_MainWorker.errorCodes.EC_WIFISCANFAILURE;
+		Errors[(STATEError | STATECompound | 0x00400000) >>> 0] = p_MainWorker.errorCodes.EC_WIFICONNECTIONERROR;
+		Errors[(STATEError | STATEPredefined | 0x00000001) >>> 0] = p_MainWorker.errorCodes.EC_INVALIDSTATE;
+		Errors[(STATEError | STATEPredefined | 0x00000002) >>> 0] = p_MainWorker.errorCodes.EC_INVALIDFILENAME;
+		Errors[(STATEError | STATEPredefined | 0x00000003) >>> 0] = p_MainWorker.errorCodes.EC_INVALIDCOMMAND;
+		Errors[(STATEError | STATEPredefined | 0x00000004) >>> 0] = p_MainWorker.errorCodes.EC_INVALIDCHANNEL;
+		Errors[(STATEError | STATEPredefined | 0x00000005) >>> 0] = p_MainWorker.errorCodes.EC_NOTENOUGHMEMORY;
+		Errors[(STATEError | STATEPredefined | 0x00000006) >>> 0] = p_MainWorker.errorCodes.EC_FILEINUSE;
+		Errors[(STATEError | STATEPredefined | 0x00000007) >>> 0] = p_MainWorker.errorCodes.EC_INVALIDSYNTAX;
+		Errors[(STATEError | STATEPredefined | 0x00000008) >>> 0] = p_MainWorker.errorCodes.EC_UNSUPPORTEDSYNTAX;
+		Errors[(STATEError | STATEPredefined | 0x00000009) >>> 0] = p_MainWorker.errorCodes.EC_UNIMPLEMENTED;
+		Errors[(STATEError | STATEPredefined | 0x0000000A) >>> 0] = p_MainWorker.errorCodes.EC_VALUEOUTOFRANGE;
+		Errors[(STATEError | STATEPredefined | 0x0000000B) >>> 0] = p_MainWorker.errorCodes.EC_INSTRUMENTARMED;
+		Errors[(STATEError | STATEPredefined | 0x0000000C) >>> 0] = p_MainWorker.errorCodes.EC_ACQCOUNTTOOOLD;
+		Errors[(STATEError | STATEPredefined | 0x0000000D) >>> 0] = p_MainWorker.errorCodes.EC_INSTRUMENTINUSE;
+		Errors[(STATEError | STATEPredefined | 0x0000000E) >>> 0] = p_MainWorker.errorCodes.EC_JSONLEXINGERROR;
+		Errors[(STATEError | STATEPredefined | 0x0000000F) >>> 0] = p_MainWorker.errorCodes.EC_JSONOBJARRAYNESTINGERROR;
+		Errors[(STATEError | STATEPredefined | 0x00000010) >>> 0] = p_MainWorker.errorCodes.EC_OSINVALIDSYNTAX;
+		Errors[(STATEError | STATEPredefined | 0x00000011) >>> 0] = p_MainWorker.errorCodes.EC_ENDOFSTREAM;
+		Errors[(STATEError | STATEPredefined | 0x00000012) >>> 0] = p_MainWorker.errorCodes.EC_NOTCFGFORCALIBRATION;
+		Errors[(STATEError | STATEPredefined | 0x00000013) >>> 0] = p_MainWorker.errorCodes.EC_UNABLETOSAVEDATA;
+		Errors[(STATEError | STATEPredefined | 0x00000014) >>> 0] = p_MainWorker.errorCodes.EC_INVALIDADAPTER;
+		Errors[(STATEError | STATEPredefined | 0x00000015) >>> 0] = p_MainWorker.errorCodes.EC_NOSSIDCONFIGURED;
+		Errors[(STATEError | STATEPredefined | 0x00000016) >>> 0] = p_MainWorker.errorCodes.EC_MUSTBEDISCONNECTED;
+		Errors[(STATEError | STATEPredefined | 0x00000017) >>> 0] = p_MainWorker.errorCodes.EC_NOSCANDATAAVAILABLE;
+		Errors[(STATEError | STATEPredefined | 0x00000018) >>> 0] = p_MainWorker.errorCodes.EC_UNABLETOGENKEY;
+		Errors[(STATEError | STATEPredefined | 0x00000019) >>> 0] = p_MainWorker.errorCodes.EC_WIFIISRUNNING;
+		Errors[(STATEError | STATEPredefined | 0x0000001A) >>> 0] = p_MainWorker.errorCodes.EC_WIFIUNABLETOSTARTHTTPSERVER;
+		Errors[(STATEError | STATEPredefined | 0x0000001B) >>> 0] = p_MainWorker.errorCodes.EC_WIFINONETWORKSFOUND;
+		Errors[(STATEError | STATEPredefined | 0x0000001C) >>> 0] = p_MainWorker.errorCodes.EC_FILEUNABLETOREADFILE;
+		Errors[(STATEError | STATEPredefined | 0x0000001D) >>> 0] = p_MainWorker.errorCodes.EC_INSTRUMENTNOTARMED;
+		Errors[(STATEError | STATEPredefined | 0x0000001E) >>> 0] = p_MainWorker.errorCodes.EC_INSTRUMENTNOTARMEDYET;
+		Errors[(STATEError | STATEPredefined | 0x0000001F) >>> 0] = p_MainWorker.errorCodes.EC_NOSDCARD;
+		Errors[(STATEError | 0x00000666) >>> 0] = p_MainWorker.errorCodes.EC_NOACTIVEDEVICE;
+
+		const errorInfo = {
+			error: Errors[p_StatusCode] || p_MainWorker.errorCodes.EC_UNKNOWN,
+			errorCode: p_StatusCode.toString(16),
+		};
+
+		if (errorInfo.error === p_MainWorker.errorCodes.EC_UNKNOWN) {
+			console.log('unknown error: (' + errorInfo.errorCode + ')');
+		} else if (errorInfo.error === p_MainWorker.errorCodes.EC_NOERROR) {
+			delete errorInfo.error; // for consistency, we will remove the error member when there is no error
+		}
+
+		return errorInfo;
+	}
+
+	/**
+	 * Make a request to the server using the information given in the request object, it will sequentially execute the requests that have been queued
+	 * Each different server will use its own queue
+	 * @param p_RequestInfo
+	 */
+	const doQueuedRequest = function(p_RequestInfo) {
+		const request = new XMLHttpRequest();
+		p_RequestInfo.XMLHttpRequest = request;
+		// handle XMLHttpRequest type errors
+		const handleError = function(p_Event) {
+			// the request failed for some reason, lets retry if we are still allowed to
+			if (tryCounter[p_RequestInfo.address] < MAX_RETRIES) {
+				// reinsert this same call into the queue at the top (the queue will shift() the current request out once this function returns)
+				// so in order to have a retry, just add the same item again to the start of the array
+				requestQueue[p_RequestInfo.address].unshift(p_RequestInfo);
+			} else {
+				// send the same error to all remaining queued items for this server so they can handle the problem also
+				requestQueue[p_RequestInfo.address].forEach(function(p_QueuedRequest) {
+					p_QueuedRequest.onError(p_Event.error || new Error('Failed to connect to ' + p_RequestInfo.address));
+				});
+				// a previous called error handler might have cleaned up the whole lot, so make sure they still exists before trying the following steps
+				if (requestQueue[p_RequestInfo.address]) {
+					// remove all queued items that come after the current call
+					requestQueue[p_RequestInfo.address] = requestQueue[p_RequestInfo.address].slice(1);
+				}
+				if (tryCounter[p_RequestInfo.address]) {
+					// clear the retry count
+					delete tryCounter[p_RequestInfo.address];
+				}
+			}
+		};
+
+		request.addEventListener('load', function(p_Event) {
+			if (request.status >= 200 && request.status <= 299) {
+				const result = { retry: p_RequestInfo.retryCount, retryTimeSpan: (p_RequestInfo.firstTry) ? Date.now() - p_RequestInfo.firstTry : 0 };
+				delete tryCounter[p_RequestInfo.address];
+				try {
+					if (p_RequestInfo.binary) {
+						if (p_Event.currentTarget.response.byteLength) {
+							const firstChar = String.fromCharCode.apply(null, new Uint8Array(p_Event.currentTarget.response.slice(0, 1)));
+							if (isNaN(parseInt(firstChar, 16))) {
+								// probably not a chunk, try parsing it with JSON
+								result.json = JSON.parse(String.fromCharCode.apply(null, new Uint8Array(p_Event.currentTarget.response)));
+							} else {
+								result.chunks = p_MainWorker.convertChunkData(p_Event.currentTarget.response);
+							}
+						} else {
+							result.error = new Error('Data has no length');
+						}
+					} else {
+						result.json = JSON.parse(p_Event.currentTarget.response);
+					}
+				} catch (p_Error) {
+					// doQueuedRequest will only call p_RequestInfo.onError when a XMLHttpRequest error happens, not when the data retrieved is invalid
+					// in the case of invalid data add an error to the result instead
+					result.error = p_Error;
+				}
+				p_RequestInfo.onSuccess(result);
+			} else {
+				p_Event.error = 'Failed to connect to ' + p_RequestInfo.address + ' because of error: ' + request.status + ' ' + request.statusText;
+				handleError(p_Event);
+			}
+		});
+		request.addEventListener('error', handleError);
+		request.addEventListener('timeout', handleError);
+		request.addEventListener('loadend', function() {
+			// we are done with this request so remove it from the queue
+			if (requestQueue[p_RequestInfo.address]) {
+				if (requestQueue[p_RequestInfo.address].length) {
+					requestQueue[p_RequestInfo.address].shift();
+				}
+				// if there is still requests left in the queue, call the next one
+				if (requestQueue[p_RequestInfo.address].length) {
+					doQueuedRequest(requestQueue[p_RequestInfo.address][0]);
+				} else {
+					// remove this address from queue object
+					delete requestQueue[p_RequestInfo.address];
+				}
+			}
+		});
+
+		try {
+			request.open(p_RequestInfo.type, p_RequestInfo.address);
+			request.setRequestHeader('Content-Type', 'application/json');
+			if (p_RequestInfo.binary) {
+				request.responseType = 'arraybuffer'; // binary data should be returned as an ArrayBuffer
+			}
+			tryCounter[p_RequestInfo.address] = tryCounter[p_RequestInfo.address] || 0;
+			tryCounter[p_RequestInfo.address]++;
+			if (p_RequestInfo.type === REQUEST_TYPE.POST) {
+				request.send(JSON.stringify(p_RequestInfo.request));
+			} else {
+				request.send();
+			}
+		} catch (p_Error) {
+			handleError({ error: p_Error });
+		}
+	};
+
+	/**
+	 * Retry the last queued request, this will reinsert the active request into the top of the queue
+	 * This only works if we are still within the handler functions of the current request
+	 * @param p_Address {String} the address of the server for which we want to retry the request
+	 * @param [p_AllowRetry] {Function} optional function to determine if a retry is allowed, return true to allow retry or false to not allow retry, if this is not given, then it will retry MAX_RETRIES times
+	 * @param p_Command {String} The command that was initiated
+	 * @param p_ID {String} The id of the initiator of the command
+	 * @param p_Error {Error} Error object for the last error
+	 * the callback function will receive the request object as the first parameter.You can use the retryCount and/or firstTry member from that object in your retry decision making
+	 */
+	function retryLastQueuedRequest(p_Address, p_AllowRetry, p_Command, p_ID, p_Error) {
+		if (requestQueue[p_Address] && requestQueue[p_Address].length) {
+			requestQueue[p_Address][0].retryCount = requestQueue[p_Address][0].retryCount || 0; // keep track of number of tries
+			requestQueue[p_Address][0].retryCount++;
+			requestQueue[p_Address][0].firstTry = requestQueue[p_Address][0].firstTry || Date.now(); // also keep track of first try time (we might handle some specific retries on a time basis instead of retry count basis)
+			// if there is no test function or the test function approves a retry, retry the request, else do nothing
+			if ((!p_AllowRetry && requestQueue[p_Address][0].retryCount < MAX_RETRIES) || (p_AllowRetry && p_AllowRetry(requestQueue[p_Address][0]))) {
+				requestQueue[p_Address].unshift(requestQueue[p_Address]);
+			} else {
+				p_MainWorker.handleFatalRequestError(p_Address, p_Command, p_ID, p_Error);
+			}
+		}
+	}
+
+	/**
+	 * Queue a request to the given server, will execute immediately if the queue is empty, or else will wait for previous call to complete
+	 * @param p_Type {String} The type of request we are making, for now only REQUEST_TYPE.POST and REQUEST_TYPE.GET are supported
+	 * @param p_Binary {Boolean} true for retrieving an array buffer or false to retrieve JSON
+	 * @param p_TargetAddress {String} Address of the server to which the request will be made
+	 * @param p_Request {Object} Object with the info for the request, this will be converted to a JSON string
+	 * @param p_ForceAsNextRequest {Boolean} true to indicate that the request should immediately follow the current active request, false to append it to the end of the queue
+	 * @param p_SuccessCallback {Function} Function to call on success, Success means that data was retrieved from the server, not that the data was valid
+	 * @param p_ErrorCallback {Function} Function to call when an error happens, note that only XMKHTTPRequest errors will call this function, invalid data retrieval will call the success function with result.error containing the error
+	 */
+	function doRequest(p_Type, p_Binary, p_TargetAddress, p_Request, p_ForceAsNextRequest, p_SuccessCallback, p_ErrorCallback) {
+		requestQueue[p_TargetAddress] = requestQueue[p_TargetAddress] || [];
+		const queueObject = {
+			type: p_Type,
+			binary: p_Binary,
+			address: p_TargetAddress,
+			request: p_Request,
+			onSuccess: p_SuccessCallback,
+			onError: p_ErrorCallback,
+		};
+
+		// if we now have only one request in this queue we can call it immediately
+		if (!requestQueue[p_TargetAddress].length) {
+			requestQueue[p_TargetAddress].push(queueObject);
+			doQueuedRequest(requestQueue[p_TargetAddress][0]);
+		} else {
+			if (p_ForceAsNextRequest) {
+				requestQueue[p_TargetAddress].splice(1, 0, queueObject);
+			} else {
+				requestQueue[p_TargetAddress].push(queueObject);
+			}
+		}
+	}
+
+	function getRelatedChannels(p_Source) {
+		return p_Source.instruments.reduce((p_Previous, p_Device) => p_Previous.concat(p_Device.channels), []);
+	}
+
+	/**
+	 * Build an object to make the same request to all instruments at once
+	 * @param p_Source {Object} Information about the server we will send the request to
+	 * @param p_Callback {Function} Implement the callback to insert the actual command into the request object
+	 * @returns {Object} The request object
+	 */
+	function buildRequestObject(p_Source, p_Callback) {
+		return p_Source.instruments.reduce(function(p_Previous, p_Device) {
+			p_Previous[p_Device.name] = p_Previous[p_Device.name] || {};
+			p_Device.channels.reduce(function(p_PrevChannel, p_Channel) {
+				// retrieve the command specific object code to insert it in the channel
+				const result = p_Callback(p_Device, p_Channel);
+				if (result) {
+					p_PrevChannel[p_Channel.name] = p_PrevChannel[p_Channel.name] || [];
+					p_PrevChannel[p_Channel.name].push(result);
+				}
+				return p_PrevChannel;
+			}, p_Previous[p_Device.name]);
+			return p_Previous;
+		}, {});
+	}
+
+	/**
+	 * Convert the given result object to an array of channels, which is more convenient to work with
+	 * @param p_Data{Object} Data object that is returned as a result from a request
+	 * @returns {Array} Array of channel information
+	 */
+	function convertToChannelArray(p_Data) {
+		return Object.keys(p_Data).reduce(function(p_Previous, p_InstrumentName) {
+			const instrument = p_Data[p_InstrumentName];
+			return p_Previous.concat(p_Previous, Object.keys(instrument).map(function(p_ChannelName) {
+				const channel = instrument[p_ChannelName][0];
+				channel.instrument = p_InstrumentName;
+				return channel;
+			}));
+		}, []);
+	}
+
+	/**
+	 * get the minimal time to wait before sending a new command, go through all channels and get the longest time
+	 * @param p_ChannelArrayOrData {Array|Object} Array of channel data or a raw result object that can be converted to such an array
+	 * @returns {Number} time in milliseconds that should be waited before sending a new command
+	 */
+	function getMinWait(p_ChannelArrayOrData) {
+		return ((Array.isArray(p_ChannelArrayOrData)) ? p_ChannelArrayOrData : convertToChannelArray(p_ChannelArrayOrData)).reduce(function(p_Previous, p_Channel) { return Math.max(p_Channel.wait || 0, p_Previous); }, 0);
+	}
+
+	const useRun = false; // there seems to be a run command that allows the trigger to be automatically reset, but it doesn't work on OpenScope(at least not for scope) so for now leave this false
+
+	/**
+	 * Request the next data window
+	 * @param p_Source {{ url: String, id: String }} Information about the 'server' from which the data is retrieved
+	 * @param p_Command {String} The command from which this call resulted
+	 * @param p_DeviceInfo {Object} Information about the device
+	 * @param p_SetTrigger {Boolean} true to indicate that we want to set a single trigger every time we want to read data, or false when we don't want to set a trigger
+	 */
+	function nextDataWindow(p_Source, p_Command, p_DeviceInfo, p_SetTrigger) {
+		if (p_MainWorker.streamingActive[p_Source.url]) {
+			const doSingleTriggerRequest = function(p_Callback) {
+				// check if we need to set the trigger
+				if (p_SetTrigger) {
+					const triggerRequestObject = { trigger: { 1: [{ command: 'single' }] } };
+					doRequest(REQUEST_TYPE.POST, false, p_Source.url, triggerRequestObject, false, function(p_TriggerData) {
+						if (!p_TriggerData.error && p_TriggerData.json) {
+							const channelArray = convertToChannelArray(p_TriggerData.json);
+
+							let errorInfo = null;
+							// go through all the channels to see if they have an error statusCode, the every call will stop at the first error, so errorInfo
+							// will contain info for the first error
+							if (channelArray.every(function(p_Channel) { errorInfo = interpretErrorCode(p_Channel.statusCode); return !errorInfo.error; })) {
+								// get the time to wait before calling the callback
+								const wait = Math.round(Math.max(getMinWait(channelArray), minimalWaitTime[p_Source.url] || 0));
+
+								if (wait) { // we have a nonzero wait, so timeout
+									dataReadWaitTimeout[p_Source.url] = { timeoutID: setTimeout(function() { delete dataReadWaitTimeout[p_Source.url]; p_Callback({ skipRead: false }); }, wait), callback: p_Callback };
+								} else { // no wait, call the callback immediately
+									p_Callback({ skipRead: false });
+								}
+							} else { // some error was found
+								p_Callback(errorInfo);
+							}
+						} else {
+							p_Callback(p_TriggerData);
+						}
+					}, function(p_Error) {
+						// XMLHttpRequest failed permanently, when this handler function gets called we already retried the max number of retries, so stop what
+						// we are doing and notify the main app
+						p_MainWorker.handleFatalRequestError(p_Source.url, p_Command, p_Source.id, p_Error);
+					});
+				} else {
+					p_Callback({ skipRead: false });
+				}
+			};
+
+			doSingleTriggerRequest(function(p_Result){
+				if (!p_Result.error) {
+					if (!p_Result.skipRead && p_MainWorker.streamingActive[p_Source.url]) { // streamingActive could have changed while waiting for request response
+						const requestObject = buildRequestObject(p_Source, function() { return { command: 'read' }; });
+
+						// request the data immediately before any other command, because another command could clear the trigger and then this will result in 'in use' error
+						doRequest(REQUEST_TYPE.POST, true, p_Source.url, requestObject, true, function(p_Data) {
+							if (!p_Data.error) {
+								if (p_Data.json) {
+									// probably not a chunk, try parsing it with JSON
+									let errorInfo = null;
+									if (!convertToChannelArray(p_Data.json).every(function(p_Channel) {
+											errorInfo = interpretErrorCode(p_Channel.statusCode);
+											return !errorInfo.error;
+										})) {
+										// instrument did not yet trigger, retry to read the data without resetting the trigger
+										if (errorInfo.error === p_MainWorker.errorCodes.EC_INSTRUMENTARMED) {
+											retryLastQueuedRequest(p_Source.url, function() {
+												return true; // keep waiting while trigger is armed
+											}, p_Command, p_Source.id, new Error(errorInfo.error));
+										} else {
+											// lets just retry the whole thing
+											nextDataWindow(p_Source, p_Command, p_DeviceInfo, p_SetTrigger);
+										}
+									} else {
+										// this is weird, we have json data only but no error ....
+										console.log('Weird, json data from read but no error...');
+										// lets just retry the whole thing
+										nextDataWindow(p_Source, p_Command, p_DeviceInfo, p_SetTrigger);
+									}
+								} else {
+									const dataInfo = p_MainWorker.convertInstrumentData(p_Data.chunks || [], p_DeviceInfo);
+									if (!dataInfo.error) {
+										// we ignore data that comes in after a stop was requested
+										if (!p_MainWorker.stopRequested) {
+											// send a 'data available' message if it was not yet send for this iteration
+											// if we don't already have a request to send the data
+											if (!p_MainWorker.mustSendData) {
+												p_MainWorker.notifyDataAvailable(p_Source.url);
+												// notify the client that new data is available
+												self.postMessage({ id: p_Source.id, event: 'dataavailable' });
+											}
+
+											// set the new data, we don't keep previous data, if it was not yet retrieved it will be lost
+											dataInfo.channels.forEach(function(p_Channel) {
+												const channelIndex = p_MainWorker.channelResultData.data.channels.findIndex(function(p_MatchingChannel) { return p_MatchingChannel.name === p_Channel.name; });
+												if (channelIndex === -1) {
+													p_MainWorker.channelResultData.data.channels.push(p_Channel);
+												} else {
+													p_MainWorker.channelResultData.data.channels[channelIndex] = p_Channel;
+												}
+											});
+											if (!p_MainWorker.singleSweepOnly) {
+												// retrieve the next set of data
+												nextDataWindow(p_Source, p_Command, p_DeviceInfo, p_SetTrigger);
+											} else {
+												doEnd(p_Source.url, p_Source.id);
+											}
+										}
+										// if a data request has been received already, send it immediately
+										if (p_MainWorker.mustSendData) {
+											p_MainWorker.sendData(p_Source.url);
+										}
+									} else {
+										// something was wrong converting the data, just retry reading the data from the instrument
+										retryLastQueuedRequest(p_Source.url, null, p_Command, p_Source.id, new Error(dataInfo.error));
+									}
+								}
+							} else {
+								// data was invalid, just retry reading the data from the instrument
+								retryLastQueuedRequest(p_Source.url, null, p_Command, p_Source.id, p_Data.error);
+							}
+						}, function(p_Error) {
+							// XMLHttpRequest failed permanently, when this handler function gets called we already retried the max number of retries, so stop what
+							// we are doing and notify the main app
+							p_MainWorker.handleFatalRequestError(p_Source.url, p_Command, p_Source.id, p_Error);
+						});
+					} else {
+						// retrieve the next set of data
+						nextDataWindow(p_Source, p_Command, p_DeviceInfo, p_SetTrigger);
+					}
+				} else {
+					// trigger setting had some problem, just retry it
+					retryLastQueuedRequest(p_Source.url, null, p_Command, p_Source.id, p_Result.error);
+				}
+			});
+		} else {
+			console.log('No stream was active'); // just for information
+		}
+	}
+
+	function requestSingleSourceInfo(p_Command, p_Source, p_Callback) {
+		const sourcesInfo = sourcesInfoCache[p_Source.url];
+		if (sourcesInfo) {
+			p_Callback(p_Source.id, sourcesInfo.data, sourcesInfo.device);
+		} else {
+			const makeChannels = function(p_Instrument, p_Input, p_Output, p_InstrumentChannelInfo) {
+				const channels = [];
+				for (let index = 1; index <= p_Instrument.numChans; index++) {
+					const channelName = index.toString();
+					const instrumentChannel = p_Instrument[channelName];
+					const channelInfo = (p_InstrumentChannelInfo) ? p_InstrumentChannelInfo.channels.find(function(p_Channel) { return p_Channel.name === channelName; }) : null;
+					if (instrumentChannel && channelInfo) {
+						instrumentChannel.channelRequestInfo = channelInfo;
+					}
+					channels.push({
+						name: channelName,
+						input: p_Input,
+						output: p_Output,
+						channelInfo: channelInfo || undefined,
+					});
+				}
+
+				return channels;
+			};
+			doRequest(REQUEST_TYPE.POST, false, p_Source.url, { device: [{ command: 'enumerate' }] }, false, function(p_Data) {
+				const getInstrument = function(p_Name) {
+					return (p_Source.instruments) ? p_Source.instruments.find(function(p_Instrument) { return p_Instrument.name === p_Name; }) : null;
+				};
+				const isInput = function(p_Name) { return ['osc', 'la', 'gpio'].indexOf(p_Name) !== -1; };
+				const isOutput = function(p_Name) { return ['gpio', 'awg', 'dc'].indexOf(p_Name) !== -1; };
+				const isInstrument = function(p_Name) { return ['osc', 'la', 'gpio', 'awg', 'dc'].indexOf(p_Name) !== -1; };
+				if (!p_Data.error && p_Data.json && p_Data.json.device) {
+					/**
+					 * @typedef {Object} device
+					 * @property deviceMake {String}
+					 * @property deviceModel {String}
+					 * @property wait {Number}
+					 * @property statusCode {Number}
+					 */
+					const device = p_Data.json.device[0];
+					let data = null;
+
+					switch (device.deviceMake) {
+					case 'Digilent':
+						switch (device.deviceModel) {
+						case 'OpenScope MZ':
+							data = { instruments: [], device: device.deviceModel };
+							Object.keys(device).forEach(function(p_InstrumentName) {
+								if (isInstrument(p_InstrumentName)) {
+									const instrument = device[p_InstrumentName];
+									data.instruments.push({
+										name: p_InstrumentName,
+										numChans: instrument.numChans,
+										channels: makeChannels(instrument, isInput(p_InstrumentName), isOutput(p_InstrumentName), getInstrument(p_InstrumentName)),
+									});
+								}
+							});
+							break;
+						}
+					}
+					sourcesInfoCache[p_Source.url] = { data: data, device: device };
+					p_Callback(p_Source.id, data, device);
+				} else {
+					if (!p_Data.error && p_Data.json && p_Data.json.agent) {
+						const errorInfo = interpretErrorCode(p_Data.json.agent[0].statusCode);
+						if (errorInfo.error === p_MainWorker.errorCodes.EC_NOACTIVEDEVICE) {
+							// try activating the device and then try again
+							const agentUrl = p_Source.url + '/config';
+							doRequest(REQUEST_TYPE.POST, false, agentUrl, { agent: [{ command: 'enumerateDevices' }] }, true, function(p_AgentData){
+								if (!p_AgentData.error) {
+									const agentInfo = p_AgentData.json.agent[0];
+									const enumerateErrorInfo = interpretErrorCode(agentInfo.statusCode);
+									if (!enumerateErrorInfo.error && agentInfo.devices.length) {
+										doRequest(REQUEST_TYPE.POST, false, agentUrl, { agent: [{ command: 'setActiveDevice', device: agentInfo.devices[0] }] }, true, function(p_DeviceActivateData){
+											const activateAgentInfo = p_DeviceActivateData.json.agent[0];
+											if (!p_DeviceActivateData.error) {
+												const activateErrorInfo = interpretErrorCode(activateAgentInfo.statusCode);
+												if (!activateErrorInfo.error) {
+													requestSingleSourceInfo(p_Command, p_Source, p_Callback);
+												} else {
+													retryLastQueuedRequest(agentUrl, null, '', p_Source.id, p_Data.error);
+												}
+											}
+										}, function(p_Error){
+											// XMLHttpRequest failed permanently, when this handler function gets called we already retried the max number of retries, so stop what
+											// we are doing and notify the main app
+											p_MainWorker.handleFatalRequestError(agentUrl, p_Command, p_Source.id, p_Error);
+										});
+									}
+								} else {
+									retryLastQueuedRequest(p_Source.url, null, '', p_Source.id, p_Data.error);
+								}
+							}, function(p_Error) {
+								// XMLHttpRequest failed permanently, when this handler function gets called we already retried the max number of retries, so stop what
+								// we are doing and notify the main app
+								p_MainWorker.handleFatalRequestError(p_Source.url, p_Command, p_Source.id, p_Error);
+							});
+						}
+					} else {
+						retryLastQueuedRequest(p_Source.url, null, '', p_Source.id, p_Data.error);
+					}
+				}
+			}, function(p_Error) {
+				// XMLHttpRequest failed permanently, when this handler function gets called we already retried the max number of retries, so stop what
+				// we are doing and notify the main app
+				p_MainWorker.handleFatalRequestError(p_Source.url, p_Command, p_Source.id, p_Error);
+			});
+		}
+	}
+
+	function cancelConnect(p_Source) {
+		if (p_Source && requestQueue[p_Source[0].url]) {
+			requestQueue[p_Source[0].url].forEach((item) => {
+				if (item.XMLHttpRequest) {
+					item.XMLHttpRequest.abort();
+				}
+			});
+		}
+	}
+
+	/**
+	 * Set the stream window, this determines our sample frequency and number of points to retrieve, it also set the trigger delay (number of seconds we want to wait before we look for a trigger)
+	 * @param p_Message(Object} Information about the server and which settings to use
+	 */
+	function doSetStreamWindow(p_Message) {
+		p_Message.sources.forEach(function(p_Source) {
+			requestSingleSourceInfo(p_Message.command, p_Source, function(p_ID, p_ChannelData, p_DeviceInfo) {
+				// cancel any active triggers
+				const stopTriggerRequestObject = { trigger: { 1: [{ command: 'stop' }] } };
+				doRequest(REQUEST_TYPE.POST, false, p_Source.url, stopTriggerRequestObject, false, function(p_StopTriggerRequestData) {
+					// if we are still in a timeout waiting for read, clear it now and call the callback but skip the read
+					const timeoutInfo = dataReadWaitTimeout[p_Source.url];
+					if (timeoutInfo) {
+						clearTimeout(timeoutInfo.timeoutID);
+						timeoutInfo.callback({ skipRead: true });
+
+						delete dataReadWaitTimeout[p_Source.url];
+					}
+
+					if (!p_StopTriggerRequestData.error && p_StopTriggerRequestData.json) {
+						const timeStep = p_Message.timeSpan / p_Message.resolution;
+						const sampleFreq = Math.round(1000 / timeStep); // sample frequency in mHz
+						const triggerTimeDelay = p_Message.timeSpan * (Math.min(1, Math.max(0, p_Message.triggerDelay))); // the time we want to delay
+						// get a buffer big enough to hold the points from trigger delay to 10% beyond the timespan
+						const targetBufferSize = (p_Message.resolution * 1.1) + Math.ceil(triggerTimeDelay / timeStep);
+						const triggerDelay = ((p_Message.resolution * timeStep) / 2) - triggerTimeDelay; // the trigger delay we have to pass to openscope
+						let targetBufferMultiply = 1;
+						let targetBufferMax = Number.MAX_SAFE_INTEGER;
+
+						const doParameterSet = function() {
+							const requestObject = buildRequestObject(p_Source, function(p_Device, p_Channel) {
+								let result = null;
+								/**
+								 * @typedef {Object} activeDeviceInfo
+								 * @property bufferSizeMax {Number}
+								 * @property sampleFreqMin {Number}
+								 * @property sampleFreqMax {Number}
+								 * @property delayMin {Number}
+								 * @property delayMax {Number}
+								 */
+								const activeDeviceInfo = p_DeviceInfo[p_Device.name][p_Channel.name];
+								targetBufferMax = Math.min(activeDeviceInfo.bufferSizeMax);
+
+								switch (p_Device.name) {
+								case 'la':
+									result = {
+										command: 'setParameters',
+										bufferSize: Math.min(Math.ceil(targetBufferSize * targetBufferMultiply), activeDeviceInfo.bufferSizeMax),
+										sampleFreq: Math.max(activeDeviceInfo.sampleFreqMin, Math.min(activeDeviceInfo.sampleFreqMax, sampleFreq)),
+									};
+									break;
+								case 'osc':
+									result = {
+										command: 'setParameters',
+										bufferSize: Math.min(Math.ceil(targetBufferSize * targetBufferMultiply), activeDeviceInfo.bufferSizeMax),
+										sampleFreq: Math.max(activeDeviceInfo.sampleFreqMin, Math.min(activeDeviceInfo.sampleFreqMax, sampleFreq)),
+										triggerDelay: Math.max(activeDeviceInfo.delayMin, Math.min(activeDeviceInfo.delayMax, Math.round(triggerDelay * 1e+12))), // calculate the trigger delay, the given delay will be a percentage of the timespan, so we have to calculate the time in pS
+									};
+									break;
+								}
+								return result;
+							});
+
+							// if the source did not contain logic analyzer or oscilloscope, we have nothing to do
+							if (requestObject) {
+								// request this immediately before any other queued command, because executing other commands could put the instrument in an 'in use' state
+								doRequest(REQUEST_TYPE.POST, false, p_Source.url, requestObject, true, function(p_Data) {
+									if (!p_Data.error) {
+										let errorInfo = null;
+										const channelArray = convertToChannelArray(p_Data.json);
+
+										// test if there are no errors ...
+										if (channelArray.every(function(p_Channel) {
+												errorInfo = interpretErrorCode(p_Channel.statusCode);
+												return !errorInfo.error;
+											})) {
+											// calculate the minimal amount of time (in ms) between arming the trigger and having results come back (since hardware runs in real time requesting data for a span of 1 sec will actually take a minimum of 1 second to acquire)
+											minimalWaitTime[p_Source.url] = channelArray.reduce(function(p_Previous, p_ChannelInfo) { return Math.max(p_Previous, 1 / (p_ChannelInfo.actualSampleFreq / 1000) * p_Message.resolution * 2); }, 0) * 1000;
+											self.postMessage({ event: p_Message.command, id: p_Source.id, result: p_Data });
+										} else { // there was an error status code
+											// need to retry this command, the instrument returned a failure code
+											if (errorInfo.error === p_MainWorker.errorCodes.EC_VALUEOUTOFRANGE && (targetBufferSize * targetBufferMultiply) < targetBufferMax) {
+												// increase buffer by 10 %, it seems the buffer must have a minimum number of points depending of sample frequency
+												targetBufferMultiply *= 1.1;
+												doParameterSet();
+											} else {
+												retryLastQueuedRequest(p_Source.url, null, p_Message.command, p_Source.id, new Error(errorInfo.error));
+											}
+										}
+									} else {
+										// need to retry this command, the retrieved data was invalid in some way
+										retryLastQueuedRequest(p_Source.url, null, p_Message.command, p_Source.id, p_Data.error);
+									}
+								}, function(p_Error) {
+									// XMLHttpRequest failed permanently, when this handler function gets called we already retried the max number of retries, so stop what
+									// we are doing and notify the main app
+									p_MainWorker.handleFatalRequestError(p_Source.url, p_Message.command, p_Source.id, p_Error);
+								});
+							}
+						};
+						doParameterSet();
+					} else {
+						console.log(p_StopTriggerRequestData.error.toString());
+					}
+				}, function(p_Error) {
+					// XMLHttpRequest failed permanently, when this handler function gets called we already retried the max number of retries, so stop what
+					// we are doing and notify the main app
+					p_MainWorker.handleFatalRequestError(p_Source.url, p_Message.command, p_Source.id, p_Error);
+				});
+			});
+		});
+	}
+
+	function doStartStream(p_Message){
+		sourcesInfoCache = {}; // reset this info before each start because the situation might have changed from the last time
+		p_Message.sources.forEach(function(p_Source){
+			// request device info
+			requestSingleSourceInfo(p_Message.command, p_Source, function(p_ID, p_ChannelData, p_DeviceInfo) {
+				const getCurrentStateRequestObject = buildRequestObject(p_Source, function(){ return { command: 'getCurrentState' }; });
+
+				// retrieve device status
+				doRequest(REQUEST_TYPE.POST, false, p_Source.url, getCurrentStateRequestObject, false, function(p_Data) {
+					if (!p_Data.error) {
+						self.postMessage({ event: p_Message.command, id: p_Source.id, result: p_Data.json });
+
+						// clear the channels for this source
+						const sourceChannels = getRelatedChannels(p_Source);
+						p_MainWorker.channelResultData.data.channels = p_MainWorker.channelResultData.data.channels.filter((p_Channel) => !sourceChannels.find((p_SourceChannel) => p_SourceChannel.anme === p_Channel.name)); // clear any existing data
+
+						p_Source.channelInfo = p_Data.json;
+						let trigger = null;
+						p_Source.instruments.every(function(p_Instrument) {
+							p_Instrument.channels.every(function(p_Channel) {
+								if (p_Channel.trigger) {
+									trigger = {
+										instrument: p_Instrument.name,
+										channel: parseInt(p_Channel.name, 10),
+										level: Math.round(p_Channel.trigger.level * 1000), // we want it in mV
+										fallingEdge: p_Channel.trigger.fallingEdge,
+									};
+								}
+								return !trigger;
+							});
+							return !trigger;
+						});
+
+						// setup the trigger
+						const triggerRequestObject = {
+							trigger: {
+								1: [{
+									command: 'setParameters',
+									source: {
+										instrument: (trigger) ? trigger.instrument : 'force',
+										channel: (trigger) ? trigger.channel : undefined,
+										type: (trigger && trigger.fallingEdge) ? 'fallingEdge' : 'risingEdge',
+										upperThreshold: (trigger) ? trigger.level : undefined,
+										lowerThreshold: (trigger) ? trigger.level - 30 : undefined,
+									},
+									targets: {},
+								}],
+							},
+						};
+
+						p_Source.instruments.forEach(function(p_Device) {
+							if (!triggerRequestObject.trigger[1][0].targets[p_Device.name]) {
+								triggerRequestObject.trigger[1][0].targets[p_Device.name] = [];
+							}
+							p_Device.channels.forEach(function(p_Channel) {
+								if (triggerRequestObject.trigger[1][0].targets[p_Device.name].indexOf() === -1) {
+									triggerRequestObject.trigger[1][0].targets[p_Device.name].push(parseInt(p_Channel.name, 10));
+								}
+							});
+						});
+
+						doRequest(REQUEST_TYPE.POST, false, p_Source.url, triggerRequestObject, false, function(p_TriggerData) {
+							if (!p_TriggerData.error) {
+								// JSON.parse(p_TriggerData);
+								p_MainWorker.streamingActive[p_Source.url] = myInterface;
+								p_MainWorker.stopRequested = false;
+
+								if (useRun) {
+									const triggerRunRequestObject = { trigger: { 1: [{ command: 'run' }] } };
+									doRequest(REQUEST_TYPE.POST, false, p_Source.url, triggerRunRequestObject, false, function(p_TriggerRunData) {
+										if (!p_TriggerRunData.error) {
+											nextDataWindow(p_Source, p_Message.command, p_DeviceInfo, !useRun);
+										} else {
+											retryLastQueuedRequest(p_Source.url, null, p_Message.command, p_Source.id, p_TriggerRunData.error);
+										}
+									}, function(p_Error) {
+										// XMLHttpRequest failed permanently, when this handler function gets called we already retried the max number of retries, so stop what
+										// we are doing and notify the main app
+										p_MainWorker.handleFatalRequestError(p_Source.url, p_Message.command, p_Source.id, p_Error);
+									});
+								} else {
+									nextDataWindow(p_Source, p_Message.command, p_DeviceInfo, !useRun);
+								}
+							} else {
+								retryLastQueuedRequest(p_Source.url, null, p_Message.command, p_Source.id, p_TriggerData.error);
+							}
+						}, function(p_Error){
+							// XMLHttpRequest failed permanently, when this handler function gets called we already retried the max number of retries, so stop what
+							// we are doing and notify the main app
+							p_MainWorker.handleFatalRequestError(p_Source.url, p_Message.command, p_Source.id, p_Error);
+						});
+					} else {
+						retryLastQueuedRequest(p_Source.url, null, p_Message.command, p_Source.id, p_Data.error);
+					}
+				}, function(p_Error) {
+					// XMLHttpRequest failed permanently, when this handler function gets called we already retried the max number of retries, so stop what
+					// we are doing and notify the main app
+					p_MainWorker.handleFatalRequestError(p_Source.url, p_Message.command, p_Source.id, p_Error);
+				});
+			});
+		});
+	}
+
+	// send end when we are finished
+	function doEnd(p_ServerAddress, p_ID) {
+		p_MainWorker.sendData(p_ServerAddress); // send any remaining data to the parent first
+		self.postMessage({ id: p_ID, event: 'end' });
+
+		delete p_MainWorker.streamingActive[p_ServerAddress]; // no longer active streaming
+		delete sourcesInfoCache[p_ServerAddress]; // clear retrieved cache for this server
+		delete requestQueue[p_ServerAddress]; // clear request queue for this server
+
+		// clear any active timeouts
+		const waitTimeoutInfo = dataReadWaitTimeout[p_ServerAddress];
+
+		if (waitTimeoutInfo) {
+			clearTimeout(waitTimeoutInfo.timeoutID);
+			waitTimeoutInfo.callback({ skipRead: true });
+			delete dataReadWaitTimeout[p_ServerAddress];
+		}
+	}
+
+	function connect(p_Message) {
+		sourcesInfoCache = {};
+		const requestSourcesInfo = function(p_Sources, p_Callback) {
+			p_Sources.forEach(function(p_Source) { requestSingleSourceInfo(p_Message.command, p_Source, p_Callback); });
+		};
+
+		requestSourcesInfo(p_Message.sources, function(p_ID, p_Data) {
+			if (!p_Data.error) {
+				self.postMessage({ event: p_Message.command, id: p_ID, result: p_Data });
+			} else {
+				self.postMessage({ event: p_Message.command, id: p_ID, error: p_Data.error.toString() });
+			}
+		});
+	}
+
+	const myInterface = {
+		deviceName: 'openScope',
+		doSetStreamWindow,
+		doStartStream,
+		doEnd,
+		cancelConnect,
+		connect,
+		canUseForSource(p_Source){ return !!p_Source.url; },
+	};
+
+	return myInterface;
+}
+
+registerDeviceInterface(getOpenScopeInterface);

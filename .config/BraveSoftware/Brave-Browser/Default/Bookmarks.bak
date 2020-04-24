@@ -1,0 +1,40 @@
+{
+   "checksum": "a675aa4f6558617433bdfb8b7b846b3e",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "date_added": "13232216051838340",
+            "guid": "599b4ef0-e4ca-4fff-aa55-1fa0816d3b71",
+            "id": "5",
+            "name": "#general",
+            "type": "url",
+            "url": "https://discordapp.com/channels/702548301299580939/702548301727137874"
+         } ],
+         "date_added": "13232144161970439",
+         "date_modified": "13232216051838340",
+         "guid": "00000000-0000-4000-A000-000000000002",
+         "id": "1",
+         "name": "Bookmarks",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13232144161970447",
+         "date_modified": "0",
+         "guid": "00000000-0000-4000-A000-000000000003",
+         "id": "2",
+         "name": "Other bookmarks",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13232144161970449",
+         "date_modified": "0",
+         "guid": "00000000-0000-4000-A000-000000000004",
+         "id": "3",
+         "name": "Mobile bookmarks",
+         "type": "folder"
+      }
+   },
+   "version": 1
+}

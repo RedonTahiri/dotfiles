@@ -1,0 +1,173 @@
+
+<!doctype html>
+<!--
+
+-->
+<html manifest="https://www.multisim.com/static/multisim/multisim.appcache">
+    <head>
+	<link href="https://www.multisim.com/static/images/favicon.ico" rel="icon" type="image/x-icon">
+	<meta charset="UTF-8">
+      <!-- don't index this page in search engines -->
+      <meta name="robots" content="noindex">
+      <!-- support mobile form factors -->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui">
+      <meta name="mobile-web-app-capable" content="yes">
+      <meta name="apple-mobile-web-app-capable" content="yes">
+      <meta name="apple-mobile-web-app-title" content="Web Multisim">
+		  <meta name="theme-color" content="#4384b7">
+
+	    <!-- disable internet explorer compatibility view -->
+      <meta http-equiv="X-UA-Compatible" content="IE=edge"><script type="text/javascript">(window.NREUM||(NREUM={})).loader_config={licenseKey:"NRJS-04f0a6a5f18bdb9b038",applicationID:"502808259"};window.NREUM||(NREUM={}),__nr_require=function(e,n,t){function r(t){if(!n[t]){var i=n[t]={exports:{}};e[t][0].call(i.exports,function(n){var i=e[t][1][n];return r(i||n)},i,i.exports)}return n[t].exports}if("function"==typeof __nr_require)return __nr_require;for(var i=0;i<t.length;i++)r(t[i]);return r}({1:[function(e,n,t){function r(){}function i(e,n,t){return function(){return o(e,[u.now()].concat(f(arguments)),n?null:this,t),n?void 0:this}}var o=e("handle"),a=e(4),f=e(5),c=e("ee").get("tracer"),u=e("loader"),s=NREUM;"undefined"==typeof window.newrelic&&(newrelic=s);var p=["setPageViewName","setCustomAttribute","setErrorHandler","finished","addToTrace","inlineHit","addRelease"],l="api-",d=l+"ixn-";a(p,function(e,n){s[n]=i(l+n,!0,"api")}),s.addPageAction=i(l+"addPageAction",!0),s.setCurrentRouteName=i(l+"routeName",!0),n.exports=newrelic,s.interaction=function(){return(new r).get()};var m=r.prototype={createTracer:function(e,n){var t={},r=this,i="function"==typeof n;return o(d+"tracer",[u.now(),e,t],r),function(){if(c.emit((i?"":"no-")+"fn-start",[u.now(),r,i],t),i)try{return n.apply(this,arguments)}catch(e){throw c.emit("fn-err",[arguments,this,e],t),e}finally{c.emit("fn-end",[u.now()],t)}}}};a("actionText,setName,setAttribute,save,ignore,onEnd,getContext,end,get".split(","),function(e,n){m[n]=i(d+n)}),newrelic.noticeError=function(e,n){"string"==typeof e&&(e=new Error(e)),o("err",[e,u.now(),!1,n])}},{}],2:[function(e,n,t){function r(e,n){var t=e.getEntries();t.forEach(function(e){"first-paint"===e.name?c("timing",["fp",Math.floor(e.startTime)]):"first-contentful-paint"===e.name&&c("timing",["fcp",Math.floor(e.startTime)])})}function i(e,n){var t=e.getEntries();t.length>0&&c("lcp",[t[t.length-1]])}function o(e){if(e instanceof s&&!l){var n,t=Math.round(e.timeStamp);n=t>1e12?Date.now()-t:u.now()-t,l=!0,c("timing",["fi",t,{type:e.type,fid:n}])}}if(!("init"in NREUM&&"page_view_timing"in NREUM.init&&"enabled"in NREUM.init.page_view_timing&&NREUM.init.page_view_timing.enabled===!1)){var a,f,c=e("handle"),u=e("loader"),s=NREUM.o.EV;if("PerformanceObserver"in window&&"function"==typeof window.PerformanceObserver){a=new PerformanceObserver(r),f=new PerformanceObserver(i);try{a.observe({entryTypes:["paint"]}),f.observe({entryTypes:["largest-contentful-paint"]})}catch(p){}}if("addEventListener"in document){var l=!1,d=["click","keydown","mousedown","pointerdown","touchstart"];d.forEach(function(e){document.addEventListener(e,o,!1)})}}},{}],3:[function(e,n,t){function r(e,n){if(!i)return!1;if(e!==i)return!1;if(!n)return!0;if(!o)return!1;for(var t=o.split("."),r=n.split("."),a=0;a<r.length;a++)if(r[a]!==t[a])return!1;return!0}var i=null,o=null,a=/Version\/(\S+)\s+Safari/;if(navigator.userAgent){var f=navigator.userAgent,c=f.match(a);c&&f.indexOf("Chrome")===-1&&f.indexOf("Chromium")===-1&&(i="Safari",o=c[1])}n.exports={agent:i,version:o,match:r}},{}],4:[function(e,n,t){function r(e,n){var t=[],r="",o=0;for(r in e)i.call(e,r)&&(t[o]=n(r,e[r]),o+=1);return t}var i=Object.prototype.hasOwnProperty;n.exports=r},{}],5:[function(e,n,t){function r(e,n,t){n||(n=0),"undefined"==typeof t&&(t=e?e.length:0);for(var r=-1,i=t-n||0,o=Array(i<0?0:i);++r<i;)o[r]=e[n+r];return o}n.exports=r},{}],6:[function(e,n,t){n.exports={exists:"undefined"!=typeof window.performance&&window.performance.timing&&"undefined"!=typeof window.performance.timing.navigationStart}},{}],ee:[function(e,n,t){function r(){}function i(e){function n(e){return e&&e instanceof r?e:e?c(e,f,o):o()}function t(t,r,i,o){if(!l.aborted||o){e&&e(t,r,i);for(var a=n(i),f=v(t),c=f.length,u=0;u<c;u++)f[u].apply(a,r);var p=s[y[t]];return p&&p.push([b,t,r,a]),a}}function d(e,n){h[e]=v(e).concat(n)}function m(e,n){var t=h[e];if(t)for(var r=0;r<t.length;r++)t[r]===n&&t.splice(r,1)}function v(e){return h[e]||[]}function g(e){return p[e]=p[e]||i(t)}function w(e,n){u(e,function(e,t){n=n||"feature",y[t]=n,n in s||(s[n]=[])})}var h={},y={},b={on:d,addEventListener:d,removeEventListener:m,emit:t,get:g,listeners:v,context:n,buffer:w,abort:a,aborted:!1};return b}function o(){return new r}function a(){(s.api||s.feature)&&(l.aborted=!0,s=l.backlog={})}var f="nr@context",c=e("gos"),u=e(4),s={},p={},l=n.exports=i();l.backlog=s},{}],gos:[function(e,n,t){function r(e,n,t){if(i.call(e,n))return e[n];var r=t();if(Object.defineProperty&&Object.keys)try{return Object.defineProperty(e,n,{value:r,writable:!0,enumerable:!1}),r}catch(o){}return e[n]=r,r}var i=Object.prototype.hasOwnProperty;n.exports=r},{}],handle:[function(e,n,t){function r(e,n,t,r){i.buffer([e],r),i.emit(e,n,t)}var i=e("ee").get("handle");n.exports=r,r.ee=i},{}],id:[function(e,n,t){function r(e){var n=typeof e;return!e||"object"!==n&&"function"!==n?-1:e===window?0:a(e,o,function(){return i++})}var i=1,o="nr@id",a=e("gos");n.exports=r},{}],loader:[function(e,n,t){function r(){if(!x++){var e=E.info=NREUM.info,n=d.getElementsByTagName("script")[0];if(setTimeout(s.abort,3e4),!(e&&e.licenseKey&&e.applicationID&&n))return s.abort();u(y,function(n,t){e[n]||(e[n]=t)}),c("mark",["onload",a()+E.offset],null,"api");var t=d.createElement("script");t.src="https://"+e.agent,n.parentNode.insertBefore(t,n)}}function i(){"complete"===d.readyState&&o()}function o(){c("mark",["domContent",a()+E.offset],null,"api")}function a(){return O.exists&&performance.now?Math.round(performance.now()):(f=Math.max((new Date).getTime(),f))-E.offset}var f=(new Date).getTime(),c=e("handle"),u=e(4),s=e("ee"),p=e(3),l=window,d=l.document,m="addEventListener",v="attachEvent",g=l.XMLHttpRequest,w=g&&g.prototype;NREUM.o={ST:setTimeout,SI:l.setImmediate,CT:clearTimeout,XHR:g,REQ:l.Request,EV:l.Event,PR:l.Promise,MO:l.MutationObserver};var h=""+location,y={beacon:"bam.nr-data.net",errorBeacon:"bam.nr-data.net",agent:"js-agent.newrelic.com/nr-1167.min.js"},b=g&&w&&w[m]&&!/CriOS/.test(navigator.userAgent),E=n.exports={offset:f,now:a,origin:h,features:{},xhrWrappable:b,userAgent:p};e(1),e(2),d[m]?(d[m]("DOMContentLoaded",o,!1),l[m]("load",r,!1)):(d[v]("onreadystatechange",i),l[v]("onload",r)),c("mark",["firstbyte",f],null,"api");var x=0,O=e(6)},{}],"wrap-function":[function(e,n,t){function r(e){return!(e&&e instanceof Function&&e.apply&&!e[a])}var i=e("ee"),o=e(5),a="nr@original",f=Object.prototype.hasOwnProperty,c=!1;n.exports=function(e,n){function t(e,n,t,i){function nrWrapper(){var r,a,f,c;try{a=this,r=o(arguments),f="function"==typeof t?t(r,a):t||{}}catch(u){l([u,"",[r,a,i],f])}s(n+"start",[r,a,i],f);try{return c=e.apply(a,r)}catch(p){throw s(n+"err",[r,a,p],f),p}finally{s(n+"end",[r,a,c],f)}}return r(e)?e:(n||(n=""),nrWrapper[a]=e,p(e,nrWrapper),nrWrapper)}function u(e,n,i,o){i||(i="");var a,f,c,u="-"===i.charAt(0);for(c=0;c<n.length;c++)f=n[c],a=e[f],r(a)||(e[f]=t(a,u?f+i:i,o,f))}function s(t,r,i){if(!c||n){var o=c;c=!0;try{e.emit(t,r,i,n)}catch(a){l([a,t,r,i])}c=o}}function p(e,n){if(Object.defineProperty&&Object.keys)try{var t=Object.keys(e);return t.forEach(function(t){Object.defineProperty(n,t,{get:function(){return e[t]},set:function(n){return e[t]=n,n}})}),n}catch(r){l([r])}for(var i in e)f.call(e,i)&&(n[i]=e[i]);return n}function l(n){try{e.emit("internal-error",n)}catch(t){}}return e||(e=i),t.inPlace=u,t.flag=a,t}},{}]},{},["loader"]);</script><script type="text/javascript">window.NREUM||(NREUM={});NREUM.info={"beacon":"bam.nr-data.net","queueTime":0,"licenseKey":"NRJS-04f0a6a5f18bdb9b038","agent":"","transactionName":"blNQMURRWkoHVhBbWlcZdBBYU0BQCVtLUVpXQlcLQh5CUANCFwh2VlhGAFhEZ1EHRw9kXFxBHAJTRA==","applicationID":"502808259","errorBeacon":"bam.nr-data.net","applicationTime":174}</script>
+		<!-- scripts -->
+	<script>
+	window.requestInfo = {
+	  project: "320492",
+    
+	     user: "Redon Tahiri",
+	     userHome:  "/contributors/255567-redont/",
+	     intercomInfo: (window.JSON) ? JSON.parse("{&quot;user_id&quot;: 255567, &quot;name&quot;: &quot;28344026&quot;, &quot;INTERCOM_IS_VALID&quot;: true, &quot;app_id&quot;: &quot;v071knz3&quot;, &quot;user_hash&quot;: &quot;70775a7e7a6f9d39d4d43997bd5e02b9d2fb0669584048e36e57bf45802c86ec&quot;, &quot;email&quot;: &quot;redon.tahiri@student.uni-pr.edu&quot;}".replace(/&quot;/g,'"')) : null,
+	     myCircuits: "/contributors/255567-redont/my-circuits/",
+    
+	  login: "/saml2/login/",
+	  signup: "https://lumen.ni.com/idp/signup?providerId=https://www.multisim.com/saml2/metadata/",
+	  publicCircuits: "/discover/",
+      upgrade: "/premium/",
+
+	  owner: true,
+
+	  project_url: '/content/oK46yg2pV22jTRdKiLxpy7/qarqe-digjitale/',
+	  copiedFrom: {
+	      url: /^none$/i.test("None") ? "" : "None",
+	      id: /^none$/i.test("None") ? "" : "None"
+	  },
+	  folder: {
+	      url: /^none$/i.test("") ? "" : "",
+	      id:  /^none$/i.test("") ? "" : ""
+	  },
+	  isNew: /^true$/i.test("")
+	};
+	</script>
+      <style>
+        /* Multisim specific styles */
+        body {
+          padding: 0;
+          margin: 0;
+          background-color: #def;
+          overflow: hidden;
+        }
+      </style>
+    </head>
+    <body tabindex="-1">
+      <noscript>
+      <style>
+        @font-face {
+          font-family: 'Lato';
+          src: local('Lato'),local('lato'),url('/static/multisim/resources/fonts/Lato/Lato-Regular.ttf')format('truetype');
+        }
+        .row {
+          display: table-row;
+        }
+        .cell {
+          display: table-cell;
+          padding: 0 1em;
+        }
+        .faketoolbar {
+          position: relative;
+          width: 100%;
+          height: 71px;
+          background: #4384b7;
+          padding-top: 25px;
+        }
+        #nilogo {
+          height: 60%;
+        }
+        .message {
+          display: table;
+          position: relative;
+          font-family: Lato, Arial, sans-serif;
+          color: rgb(51,51,51);
+          font-size: 2em;
+          text-align: center;
+          min-height: 100%;
+          max-width: 100%;
+        }
+        .messagecontainer {
+          position: absolute;
+          top: 96px;
+          width: 100%;
+          bottom: 0;
+          overflow-y: auto;
+          max-width: 100%;
+        }
+        .footer {
+          position: absolute;
+          bottom: 0;
+          padding-bottom: .5em;
+          text-align: center;
+          font-size: .3em;
+          min-width: 100%;
+        }
+
+        img {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        </style>
+      <div id="noscript">
+        <div class="faketoolbar">
+          <img id="nilogo" src="/static/multisim/resources/images/nilogo.png">
+        </div>
+        <div class="messagecontainer">
+          <div class="message">
+            <div class="row"><div class="cell spacer">&nbsp;</div></div>
+            <div class="row"><div class="cell">Multisim Live requires JavaScript to work.</div></div>
+            <div class="row"><div class="cell">Enable JavaScript or use a recent browser with full JavaScript support.</div></div>
+            <div class="row"><div class="cell">We recommend that you use the latest version of Chrome™ browser to best experience Multisim Live.</div></div>
+            <div class="row"><div class="cell spacer">&nbsp;</div></div>
+            <div class="footer">
+              <p>Chrome™ is a trademark of Google Inc.</p>
+              <p>© 2017 NATIONAL INSTRUMENTS</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </noscript>
+
+	  <web-multisim></web-multisim>
+
+    <script src="https://www.multisim.com/static/multisim/webmultisim.js"></script>
+
+    </body>
+</html>
+
+
+<!--
+<p>
+Any static files (js, css, imgs) place inside the /static/shark/ directory (feel free to rename ;)
+
+Note: you may want to look at other templates in the /templates/ directory to get a sense of which blocks
+can be utilized if you'd like to keep things like the header / footer consistant with the shark tank. You also have
+access to the django request object in here as well request which will provide things like the actual circuit and
+authenticated user objects.
+
+<hr />
+<h2>Passed Context Data Examples</h2>
+<b>request.user: </b>Redon Tahiri<br />
+<b>circuit.title:</b>Qarqe Digjitale<br /><br />
+<b>Redon Tahiri</b>
+<b>Redon Tahiri</b>
+
+  Is Owner
+
+
+</p>
+<h2>Available Attributes of request</h2>
+&lt;code&gt;[&#39;COOKIES&#39;, &#39;FILES&#39;, &#39;GET&#39;, &#39;META&#39;, &#39;POST&#39;, &#39;__class__&#39;, &#39;__delattr__&#39;, &#39;__dict__&#39;, &#39;__doc__&#39;, &#39;__format__&#39;, &#39;__getattribute__&#39;, &#39;__hash__&#39;, &#39;__init__&#39;, &#39;__iter__&#39;, &#39;__module__&#39;, &#39;__new__&#39;, &#39;__reduce__&#39;, &#39;__reduce_ex__&#39;, &#39;__repr__&#39;, &#39;__setattr__&#39;, &#39;__sizeof__&#39;, &#39;__str__&#39;, &#39;__subclasshook__&#39;, &#39;__weakref__&#39;, &#39;_cached_user&#39;, &#39;_cors_enabled&#39;, &#39;_encoding&#39;, &#39;_files&#39;, &#39;_get_post&#39;, &#39;_get_raw_host&#39;, &#39;_get_scheme&#39;, &#39;_initialize_handlers&#39;, &#39;_load_post_and_files&#39;, &#39;_mark_post_parse_error&#39;, &#39;_messages&#39;, &#39;_post&#39;, &#39;_post_parse_error&#39;, &#39;_read_started&#39;, &#39;_set_post&#39;, &#39;_stream&#39;, &#39;_upload_handlers&#39;, &#39;body&#39;, &#39;build_absolute_uri&#39;, &#39;close&#39;, &#39;content_params&#39;, &#39;content_type&#39;, &#39;csrf_processing_done&#39;, &#39;encoding&#39;, &#39;environ&#39;, &#39;get_full_path&#39;, &#39;get_host&#39;, &#39;get_port&#39;, &#39;get_raw_uri&#39;, &#39;get_signed_cookie&#39;, &#39;is_ajax&#39;, &#39;is_secure&#39;, &#39;method&#39;, &#39;parse_file_upload&#39;, &#39;path&#39;, &#39;path_info&#39;, &#39;read&#39;, &#39;readline&#39;, &#39;readlines&#39;, &#39;resolver_match&#39;, &#39;scheme&#39;, &#39;session&#39;, &#39;site&#39;, &#39;site_id&#39;, &#39;upload_handlers&#39;, &#39;user&#39;, &#39;user_agent&#39;, &#39;xreadlines&#39;]&lt;/code&gt;
+
+<h2>Available Attributes of object</h2>
+&lt;code&gt;[&#39;ACTIVE_STATUS&#39;, &#39;DoesNotExist&#39;, &#39;INACTIVE_STATUS&#39;, &#39;Meta&#39;, &#39;MultipleObjectsReturned&#39;, &#39;STATUS_CHOICES&#39;, &#39;__class__&#39;, &#39;__delattr__&#39;, &#39;__dict__&#39;, &#39;__doc__&#39;, &#39;__eq__&#39;, &#39;__format__&#39;, &#39;__getattribute__&#39;, &#39;__hash__&#39;, &#39;__init__&#39;, u&#39;__module__&#39;, &#39;__ne__&#39;, &#39;__new__&#39;, &#39;__reduce__&#39;, &#39;__reduce_ex__&#39;, &#39;__repr__&#39;, &#39;__setattr__&#39;, &#39;__setstate__&#39;, &#39;__sizeof__&#39;, &#39;__str__&#39;, &#39;__subclasshook__&#39;, &#39;__unicode__&#39;, &#39;__weakref__&#39;, &#39;_check_column_name_clashes&#39;, &#39;_check_field_name_clashes&#39;, &#39;_check_fields&#39;, &#39;_check_id_field&#39;, &#39;_check_index_together&#39;, &#39;_check_local_fields&#39;, &#39;_check_long_column_names&#39;, &#39;_check_m2m_through_same_relationship&#39;, &#39;_check_managers&#39;, &#39;_check_model&#39;, &#39;_check_model_name_db_lookup_clashes&#39;, &#39;_check_ordering&#39;, &#39;_check_swappable&#39;, &#39;_check_unique_together&#39;, &#39;_contributor_cache&#39;, &#39;_copied_from_cache&#39;, &#39;_do_insert&#39;, &#39;_do_update&#39;, &#39;_get_FIELD_display&#39;, &#39;_get_next_or_previous_by_FIELD&#39;, &#39;_get_next_or_previous_in_order&#39;, &#39;_get_pk_val&#39;, &#39;_get_unique_checks&#39;, &#39;_meta&#39;, &#39;_original_featured&#39;, &#39;_perform_date_checks&#39;, &#39;_perform_unique_checks&#39;, &#39;_save_parents&#39;, &#39;_save_table&#39;, &#39;_set_pk_val&#39;, &#39;_state&#39;, &#39;activate_date&#39;, &#39;activity_actor&#39;, &#39;activity_actor_attr&#39;, &#39;activity_actor_id&#39;, &#39;activity_author_feed&#39;, &#39;activity_foreign_id&#39;, &#39;activity_notify&#39;, &#39;activity_object&#39;, &#39;activity_object_attr&#39;, &#39;activity_related_models&#39;, &#39;activity_time&#39;, &#39;activity_verb&#39;, &#39;admin_tags&#39;, &#39;check&#39;, &#39;clean&#39;, &#39;clean_fields&#39;, &#39;collection&#39;, &#39;collection_id&#39;, &#39;comments&#39;, &#39;comments_count&#39;, &#39;component_count&#39;, &#39;content_set&#39;, &#39;contentfile_set&#39;, &#39;contributor&#39;, &#39;contributor_id&#39;, &#39;copied_from&#39;, &#39;copied_from_id&#39;, &#39;copies_count&#39;, &#39;create_activity&#39;, &#39;created&#39;, &#39;created_at&#39;, &#39;date_error_message&#39;, &#39;deactivate_date&#39;, &#39;delete&#39;, &#39;design_libraries&#39;, &#39;design_updated&#39;, &#39;extra_activity_data&#39;, &#39;favourite_set&#39;, &#39;featured&#39;, &#39;featured_comments&#39;, &#39;featuredcomment&#39;, &#39;from_db&#39;, &#39;full_clean&#39;, &#39;get_absolute_url&#39;, &#39;get_commentsfield_name&#39;, &#39;get_copies&#39;, &#39;get_deferred_fields&#39;, &#39;get_next_by_created&#39;, &#39;get_next_by_modified&#39;, &#39;get_previewimage_url&#39;, &#39;get_previous_by_created&#39;, &#39;get_previous_by_modified&#39;, &#39;get_ratingfield_name&#39;, &#39;get_status_display&#39;, &#39;get_visibility_display&#39;, &#39;group_set&#39;, &#39;id&#39;, &#39;is_deleted&#39;, &#39;karma&#39;, &#39;legacy_tags&#39;, &#39;modified&#39;, &#39;num_of_copies&#39;, &#39;objects&#39;, &#39;over_component_limit&#39;, &#39;owner_content&#39;, &#39;pageview_set&#39;, &#39;pk&#39;, &#39;prepare_database_save&#39;, &#39;public&#39;, &#39;public_circuits&#39;, &#39;publicprivate&#39;, &#39;rating&#39;, &#39;rating_average&#39;, &#39;rating_count&#39;, &#39;rating_sum&#39;, &#39;reference&#39;, &#39;refresh_from_db&#39;, &#39;safe_delete&#39;, &#39;save&#39;, &#39;save_base&#39;, &#39;serializable_value&#39;, &#39;shared_with&#39;, &#39;sharedcontent_set&#39;, &#39;slug&#39;, &#39;sponsoredcontent_set&#39;, &#39;status&#39;, &#39;tagged_items&#39;, &#39;tags&#39;, &#39;text&#39;, &#39;title&#39;, &#39;undeleted&#39;, &#39;unique_error_message&#39;, &#39;uuid&#39;, &#39;validate_unique&#39;, &#39;visibility&#39;]&lt;/code&gt;
+-->
+
+
