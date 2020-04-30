@@ -304,6 +304,8 @@ globalkeys = gears.table.join(
         {description = "go back", group = "client"}),
 
     -- Standard program
+	awful.key({ modkey,  }, "F5", function () awful.spawn("displayselect") end,
+			  {description = "dmenu", group = "launcher"}),
 	awful.key({ modkey,   }, "x", function () awful.spawn("slock") end,
    	          {description = "dmenu", group = "launcher"}),
 	awful.key({ "Shift",   }, "Print", function () awful.spawn("maimpick") end,
@@ -355,9 +357,10 @@ globalkeys = gears.table.join(
               {description = "restore minimized", group = "client"}),
 
     -- Prompt
-    awful.key({ modkey },            "r",     function () awful.screen.focused().mypromptbox:run() end,
-              {description = "run prompt", group = "launcher"}),
-
+    --awful.key({ modkey },  "r",     function () awful.screen.focused().mypromptbox:run() end,
+      --        {description = "run prompt", group = "launcher"}),
+	  awful.key({ modkey,  }, "r", function () awful.spawn(terminal .. " -e ranger") end,
+			  {description = "ranger", group = "launcher"}),
       -- Menubar
     awful.key({ modkey }, "p", function() menubar.show() end,
               {description = "show the menubar", group = "launcher"})
