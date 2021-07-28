@@ -1,9 +1,8 @@
-# Awesome WM 4.0
+# WM
+These dotfiles will work on Awesome WM 4.0
 ## Scripts
-.local/bin/
+The scripts are located at:`.local/bin/`
 ## st
 My own build of suckless-terminal.
-## vim
-vim configuration with nord-theme.
 ## Installation
 clone the repository in your home directory and add .local/bin to $PATH.
