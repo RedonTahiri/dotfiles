@@ -1,6 +1,6 @@
 
 XTerm*faceName:xft: Terminess Powerline
-xterm*faceSize: 12
+xterm*faceSize: 16
 xterm*saveLines: 2000
 *.foreground:   #cbe3e7
 *.background:   #1e1c31
